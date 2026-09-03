@@ -1,0 +1,104 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
+
+import { signOut } from '@/lib/auth-client';
+import type { SessionUser } from '@/lib/auth';
+
+/** `Ansh Tiwari` -> `AT`; falls back to the email's first letter. */
+function initials(user: SessionUser): string {
+  const source = user.name?.trim() || user.email;
+  const parts = source.split(/[\s@._-]+/).filter(Boolean);
+  return (parts[0]?.[0] ?? '?').concat(parts[1]?.[0] ?? '').toUpperCase();
+}
+
+export function UserMenu({ user }: { user: SessionUser }) {
+  const [open, setOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Close on an outside click or Escape — a menu that can only be dismissed by
+  // navigating is a trap on touch devices.
+  useEffect(() => {
+    if (!open) return;
+
+    function onPointerDown(event: MouseEvent | TouchEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false);
+    }
+
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('touchstart', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('touchstart', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    try {
+      await signOut();
+      // Full navigation for the same reason sign-in uses one: the header is
+      // rendered by the root layout, which survives client-side navigation and
+      // would otherwise keep showing the signed-out user's name.
+      window.location.assign('/');
+    } catch {
+      setSigningOut(false);
+    }
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        className="flex items-center gap-2 rounded-full border border-line bg-surface py-1 pl-1 pr-3 text-sm font-medium text-ink transition hover:border-line-strong"
+      >
+        <span className="grid h-7 w-7 place-items-center rounded-full bg-brand-tint text-xs font-semibold text-brand-strong">
+          {initials(user)}
+        </span>
+        <span className="hidden max-w-28 truncate sm:block">{user.name || user.email}</span>
+        <svg viewBox="0 0 20 20" className="h-4 w-4 text-ink-faint" fill="none" aria-hidden>
+          <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {open ? (
+        <div
+          role="menu"
+          className="absolute right-0 z-30 mt-2 w-60 overflow-hidden rounded-xl border border-line bg-surface shadow-lg shadow-ink/5"
+        >
+          <div className="border-b border-line px-4 py-3">
+            <p className="truncate text-sm font-medium text-ink">{user.name || 'Your account'}</p>
+            <p className="truncate text-xs text-ink-muted">{user.email}</p>
+          </div>
+          <Link
+            href="/applications"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2.5 text-sm text-ink transition hover:bg-sunken"
+          >
+            My EMI applications
+          </Link>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="block w-full px-4 py-2.5 text-left text-sm text-ink transition hover:bg-sunken disabled:opacity-60"
+          >
+            {signingOut ? 'Signing out…' : 'Sign out'}
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
