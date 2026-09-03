@@ -48,6 +48,14 @@ at `.../neondb` and every call 404s. `GET <base>/ok` should return `{"ok":true}`
 Other scripts: `npm run db:images` (regenerate artwork only), `npm run db:seed`
 (schema + data only), `npm run typecheck`, `npm run lint`, `npm run build`.
 
+### Deploying
+
+Neon Auth allows `localhost` out of the box but nothing else. Before the first
+deploy, add the production origin to **Trusted origins** in the Neon Auth
+settings for the project — otherwise sign-in fails CORS on the deployed domain
+while working perfectly in development. Set the same three environment
+variables on the host.
+
 ## API
 
 | Route | Purpose |
