@@ -7,8 +7,19 @@ units stay invested, and you pay the phone off monthly.
 Products, prices, images and EMI plans all come from Postgres through the app's
 own API. Nothing in the UI is hardcoded.
 
-Built with Next.js 16, React 19, Tailwind CSS v4, Postgres on Neon, and Neon
-Auth for login.
+Live at https://1fi-mu.vercel.app
+
+## Tech stack
+
+| Layer | Used |
+| --- | --- |
+| Frontend | React 19, Next.js 16 App Router, Tailwind CSS v4 |
+| Backend | Node.js, Next.js route handlers under `src/app/api` |
+| Database | PostgreSQL, hosted on Neon |
+| DB driver | `pg`, plain SQL, no ORM |
+| Auth | Neon Auth (email and password, plus Google) |
+| Language | TypeScript |
+| Hosting | Vercel |
 
 ## What you can do
 
@@ -92,28 +103,257 @@ Set the same three environment variables on your host.
 | `GET /api/health` | Checks the database is reachable |
 | `/api/auth/[...path]` | Neon Auth, proxied through this app |
 
-`:idOrSlug` takes either the URL slug or the row's uuid, so both of these work:
+`:idOrSlug` takes either the URL slug or the row's uuid, so both of these work.
+The uuids change every time you reseed, the slugs do not:
 
 ```
 /api/products/iphone-17-pro
-/api/products/74d67b14-e7da-449a-9e61-584a708f21ca
+/api/products/1bcdb727-a3fd-4c7c-9815-6aec0bf501df
 ```
 
 The product detail response prices every variant's EMI plans on the server. That
 is why switching finish or storage in the UI is instant, and it also means the
 browser can never change what a plan costs.
 
+### Example responses
+
+**`GET /api/products`** returns one entry per product, enough to draw a card.
+Trimmed to the first of four:
+
+```json
+{
+  "products": [
+    {
+      "id": "1bcdb727-a3fd-4c7c-9815-6aec0bf501df",
+      "slug": "iphone-17-pro",
+      "brand": "Apple",
+      "name": "iPhone 17 Pro",
+      "tagline": "Aerospace-grade titanium. A19 Pro. All-day battery.",
+      "category": "smartphone",
+      "isNew": true,
+      "rating": 4.8,
+      "reviewCount": 2431,
+      "colors": [
+        { "name": "Cosmic Orange", "hex": "#C86B34" },
+        { "name": "Silver", "hex": "#DCDEE1" },
+        { "name": "Deep Blue", "hex": "#2E4A6B" }
+      ],
+      "storages": ["256GB", "512GB", "1TB"],
+      "variantCount": 9,
+      "priceFrom": 127400,
+      "mrpFrom": 134900,
+      "discountPercent": 5,
+      "imageUrl": "/products/iphone-17-pro-cosmic-orange.png",
+      "lowestEmi": { "monthlyAmount": 2738, "tenureMonths": 60, "interestRate": 10.5 }
+    }
+  ]
+}
+```
+
+**`GET /api/products/iphone-17-pro`** adds `description`, `highlights` and the
+full `variants` array. Each variant carries its own price and its own priced EMI
+plans. Trimmed to one variant and two of its seven plans:
+
+```json
+{
+  "product": {
+    "id": "1bcdb727-a3fd-4c7c-9815-6aec0bf501df",
+    "slug": "iphone-17-pro",
+    "brand": "Apple",
+    "name": "iPhone 17 Pro",
+    "description": "The iPhone 17 Pro pairs a forged titanium unibody with the A19 Pro chip...",
+    "highlights": [
+      "6.3\" Super Retina XDR, ProMotion 120Hz",
+      "A19 Pro chip with 6-core GPU"
+    ],
+    "variants": [
+      {
+        "id": "b2325631-c758-4147-bb8a-61a6f441827d",
+        "sku": "IPHONE-17-PRO-COSMIC-ORANGE-256GB",
+        "colorName": "Cosmic Orange",
+        "colorHex": "#C86B34",
+        "storage": "256GB",
+        "mrp": 134900,
+        "price": 127400,
+        "discountPercent": 5,
+        "imageUrl": "/products/iphone-17-pro-cosmic-orange.png",
+        "inStock": true,
+        "isDefault": true,
+        "emiPlans": [
+          {
+            "id": "94d0014f-8bba-4aa8-a2e1-e15316e9a10e",
+            "tenureMonths": 3,
+            "interestRate": 0,
+            "cashback": 7500,
+            "processingFee": 0,
+            "fundedBy": "Mutual Fund Pledge",
+            "isPopular": false,
+            "principal": 127400,
+            "monthlyAmount": 42467,
+            "totalPayable": 127400,
+            "totalInterest": 0,
+            "effectiveCost": 119900,
+            "isNoCost": true
+          },
+          {
+            "id": "4d28e2fc-bef4-41e6-8693-846c2a50bd90",
+            "tenureMonths": 36,
+            "interestRate": 10.5,
+            "cashback": 7500,
+            "processingFee": 0,
+            "fundedBy": "Mutual Fund Pledge",
+            "isPopular": false,
+            "principal": 127400,
+            "monthlyAmount": 4141,
+            "totalPayable": 149076,
+            "totalInterest": 21676,
+            "effectiveCost": 141576,
+            "isNoCost": false
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**`POST /api/applications`** takes the variant and plan you picked. Everything
+else is worked out on the server:
+
+```json
+{
+  "variantId": "b2325631-c758-4147-bb8a-61a6f441827d",
+  "emiPlanId": "8f1c4b2e-4a71-4c39-9f0e-2b5d7c1a3e64"
+}
+```
+
+It replies `201` with the saved application. `GET /api/applications` returns the
+same objects in an `applications` array:
+
+```json
+{
+  "application": {
+    "id": "f0c1a9d4-6f22-4a1b-9a3c-72d8e5b04c11",
+    "reference": "1FI-R98VLZLL",
+    "status": "submitted",
+    "createdAt": "2026-09-03T11:15:54.019Z",
+    "principal": 127400,
+    "monthlyAmount": 10617,
+    "totalPayable": 127400,
+    "totalInterest": 0,
+    "cashback": 7500,
+    "processingFee": 0,
+    "tenureMonths": 12,
+    "interestRate": 0,
+    "product": { "slug": "iphone-17-pro", "brand": "Apple", "name": "iPhone 17 Pro" },
+    "variant": {
+      "sku": "IPHONE-17-PRO-COSMIC-ORANGE-256GB",
+      "colorName": "Cosmic Orange",
+      "colorHex": "#C86B34",
+      "storage": "256GB",
+      "imageUrl": "/products/iphone-17-pro-cosmic-orange.png"
+    }
+  }
+}
+```
+
+**`GET /api/health`**:
+
+```json
+{
+  "status": "ok",
+  "database": "connected",
+  "counts": { "products": 4, "variants": 25, "plans": 25 },
+  "timestamp": "2026-09-03T11:18:38.398Z"
+}
+```
+
+Errors are the same shape everywhere, an `error` code and a `message` you can
+show the user:
+
+```json
+{ "error": "not_found", "message": "No product matches \"nope\"." }
+```
+
+```json
+{ "error": "unauthorized", "message": "Sign in to continue with an EMI plan." }
+```
+
+| Status | When |
+| --- | --- |
+| `400` | `variantId` or `emiPlanId` missing or not a uuid |
+| `401` | No session on an applications route |
+| `404` | No such product, or the plan is not offered on that product |
+| `409` | That variant is out of stock |
+| `503` | `/api/health` could not reach Postgres |
+
 ## Database
 
-Four tables. Full SQL with all the constraints is in
-[`db/schema.sql`](db/schema.sql).
+Four tables. Full SQL with every constraint, index and check is in
+[`db/schema.sql`](db/schema.sql). Seed data is in
+[`db/catalog.mjs`](db/catalog.mjs), loaded by [`db/seed.mjs`](db/seed.mjs).
 
-| Table | Holds |
-| --- | --- |
-| `products` | One row per model, plus the slug used in the URL |
-| `product_variants` | One row per finish x storage, with its own price, MRP and image |
-| `emi_plans` | The tenures offered on a product, with rate and cashback |
-| `emi_applications` | A plan someone actually picked |
+```
+products ──< product_variants ──< emi_applications >── emi_plans
+    └──────────────────< emi_plans                        │
+                                                          │
+                          (an application points at one variant and one plan)
+```
+
+**`products`** one row per model.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | uuid | primary key |
+| `slug` | text | unique, used in the URL |
+| `brand`, `name`, `tagline`, `description` | text | |
+| `category` | text | defaults to `smartphone` |
+| `highlights` | text[] | bullets on the product page |
+| `is_new` | boolean | shows the NEW badge |
+| `rating`, `review_count` | numeric(2,1), integer | |
+| `position` | integer | sort order on the store page |
+
+**`product_variants`** one row per finish x storage. Price lives here, not on
+the product, because it differs per configuration.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | uuid | primary key |
+| `product_id` | uuid | to `products`, cascade delete |
+| `sku` | text | unique, used as `?variant=` in the URL |
+| `color_name`, `color_hex` | text | hex is checked against `^#[0-9A-Fa-f]{6}$` |
+| `storage` | text | `256GB`, `1TB` |
+| `mrp`, `price` | integer | rupees, `price <= mrp` |
+| `image_url` | text | path under `public/products/` |
+| `in_stock`, `is_default` | boolean | one default per product, enforced by a partial unique index |
+
+**`emi_plans`** the tenures offered on a product. Terms only, no amounts.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | uuid | primary key |
+| `product_id` | uuid | to `products`, cascade delete |
+| `tenure_months` | integer | 1 to 84, unique per product |
+| `interest_rate` | numeric(5,2) | annual percentage, 0 means no cost |
+| `cashback`, `processing_fee` | integer | rupees |
+| `funded_by` | text | defaults to `Mutual Fund Pledge` |
+| `is_popular` | boolean | the "most chosen" tag |
+
+**`emi_applications`** a plan someone picked, with the numbers copied in.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | uuid | primary key |
+| `reference` | text | unique, checked against `^1FI-[0-9A-Z]{8}$` |
+| `user_id`, `user_email`, `user_name` | uuid, text | |
+| `variant_id`, `emi_plan_id` | uuid | restrict delete, so you cannot remove a product someone applied for |
+| `principal`, `monthly_amount`, `total_payable`, `total_interest` | integer | snapshotted |
+| `cashback`, `processing_fee`, `tenure_months` | integer | snapshotted |
+| `interest_rate` | numeric(5,2) | snapshotted |
+| `status` | text | one of submitted, under_review, approved, rejected, cancelled |
+
+`user_id` points at `neon_auth."user".id` but is not a foreign key on purpose.
+Neon manages that schema and can reset it independently of ours.
 
 Two things worth knowing:
 
