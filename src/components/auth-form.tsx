@@ -103,8 +103,14 @@ export function AuthForm({ mode, next }: { mode: Mode; next?: string }) {
     setError(null);
     setPending('google');
     try {
+      // Google has to come back to /auth/callback, not straight to the
+      // destination: that route is where the verifier gets swapped for a
+      // session cookie. The real destination rides along in ?next=.
       // Redirects the browser away, so nothing after this runs when it works.
-      await signIn.social({ provider: 'google', callbackURL: destination });
+      await signIn.social({
+        provider: 'google',
+        callbackURL: `/auth/callback?next=${encodeURIComponent(destination)}`,
+      });
     } catch (caught) {
       setError(describeAuthError(caught));
       setPending(null);

@@ -175,6 +175,17 @@ going. Each protected page checks the session itself and redirects to
 `/sign-in?next=...`, so after logging in you land back on the exact phone and
 finish you were looking at.
 
+**Except on `/auth/callback`, which does need the middleware.** Google sends
+people back with a `?neon_auth_session_verifier=` token, and only Neon Auth's
+middleware knows how to swap that for a session cookie. Without it you land back
+on the site with the token still in the URL and no session. Email and password
+never touch that path, so it is easy to miss until you try Google.
+
+[`src/proxy.ts`](src/proxy.ts) runs the middleware on `/auth/callback` and
+nowhere else, because it protects whatever it matches and pointing it at the
+whole app would put the store behind a login. Google's `callbackURL` is
+`/auth/callback?next=<where you were>`, and the page there forwards you on.
+
 **Login and logout reload the page instead of using the router.** The header is
 in the root layout, which Next keeps mounted while you navigate. A
 `router.push` would take you to the next page still showing the old header.
