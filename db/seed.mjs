@@ -70,7 +70,7 @@ try {
           variant.storage,
           variant.mrp,
           variant.price,
-          `/products/${variant.sku}.svg`,
+          variant.imageUrl,
           variant.isDefault,
           variant.position,
         ],

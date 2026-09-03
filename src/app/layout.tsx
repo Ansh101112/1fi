@@ -15,7 +15,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: '1Fi — Buy on EMI backed by your mutual funds',
+    default: '1Fi: Buy on EMI backed by your mutual funds',
     template: '%s · 1Fi',
   },
   description:
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 
 /**
  * The header reads the session, so every page is rendered per-request. Product
- * data is dynamic anyway — it all comes from Postgres on each request.
+ * data is dynamic anyway: it all comes from Postgres on each request.
  */
 export const dynamic = 'force-dynamic';
 

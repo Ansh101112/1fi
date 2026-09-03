@@ -9,9 +9,9 @@ import { Pool, types } from 'pg';
  */
 
 // `numeric` arrives from node-postgres as a string to protect precision on
-// large values. Our only numeric column is emi_plans.interest_rate — a
-// percentage with two decimal places, comfortably inside a float64 — so we
-// parse it here and let the rest of the codebase treat rates as numbers.
+// large values. Our only numeric column is emi_plans.interest_rate, a
+// percentage with two decimal places that sits comfortably inside a float64,
+// so we parse it here and let the rest of the codebase treat rates as numbers.
 // Every money column is `integer`, which pg already yields as a number.
 const PG_NUMERIC_OID = 1700;
 types.setTypeParser(PG_NUMERIC_OID, (value) => Number.parseFloat(value));

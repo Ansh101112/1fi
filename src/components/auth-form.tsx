@@ -2,7 +2,6 @@
 
 import { isAuthApiError, isAuthError } from '@neondatabase/auth/next';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { signIn, signUp } from '@/lib/auth-client';
@@ -11,7 +10,7 @@ import { signIn, signUp } from '@/lib/auth-client';
  * Email/password and Google sign-in against Neon Auth.
  *
  * Both modes share this component because they differ only by which client
- * method they call and which copy they show — splitting them duplicated the
+ * method they call and which copy they show. Splitting them duplicated the
  * error handling and the redirect dance.
  */
 
@@ -54,7 +53,7 @@ const GENERIC_ERROR = 'Could not reach the authentication service. Please try ag
  * Turns whatever the client produced into something worth showing.
  *
  * Neon Auth's client does not return `{ error }` for a failed request the way
- * plain Better Auth does — it *throws* a typed error. Without this, a real
+ * plain Better Auth does. It *throws* a typed error. Without this, a real
  * answer like "User already exists" surfaced as a network error and left the
  * user with no idea what to change.
  */
@@ -67,7 +66,6 @@ function describeAuthError(error: unknown): string {
 
 export function AuthForm({ mode, next }: { mode: Mode; next?: string }) {
   const copy = COPY[mode];
-  const router = useRouter();
   const destination = safeRedirect(next);
 
   const [name, setName] = useState('');

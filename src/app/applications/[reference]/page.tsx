@@ -87,10 +87,10 @@ export default async function ApplicationPage({ params }: PageProps<'/applicatio
             <Image
               src={application.variant.imageUrl}
               alt={application.product.name}
-              width={640}
-              height={800}
+              width={400}
+              height={400}
               unoptimized
-              className="h-20 w-auto"
+              className="h-20 w-20 object-contain"
             />
           </div>
           <div className="min-w-0">

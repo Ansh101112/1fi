@@ -115,7 +115,7 @@ function pickDefaultVariant(variants: VariantRow[]): VariantRow | undefined {
   return variants.find((variant) => variant.is_default) ?? variants[0];
 }
 
-/** Distinct colours in variant order — the swatch row on a product card. */
+/** Distinct colours in variant order, as shown in a product card swatch row. */
 function distinctColors(variants: VariantRow[]): ColorOption[] {
   const seen = new Map<string, ColorOption>();
   for (const variant of variants) {
@@ -198,7 +198,7 @@ function toVariant(variant: VariantRow, plans: PlanRow[]): ProductVariant {
   };
 }
 
-/** Every product, as cards. Products without variants are skipped — they are unbuyable. */
+/** Every product, as cards. Products without variants are skipped, since they are unbuyable. */
 export async function listProducts(): Promise<ProductSummary[]> {
   const products = await query<ProductRow>(
     `select ${PRODUCT_COLUMNS} from products p order by p.position, p.name`,

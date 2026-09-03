@@ -1,5 +1,5 @@
 -- =============================================================================
--- 1Fi — EMI-on-mutual-funds storefront
+-- 1Fi: EMI-on-mutual-funds storefront
 -- Application schema (public). Neon Auth owns the `neon_auth` schema separately.
 --
 -- Money convention: every amount is a whole number of Indian rupees stored as
@@ -15,7 +15,7 @@ drop table if exists product_variants cascade;
 drop table if exists products         cascade;
 
 -- -----------------------------------------------------------------------------
--- products — one row per model. The `slug` is the public URL key, which is what
+-- products: one row per model. The `slug` is the public URL key, which is what
 -- gives every product its own address at /products/<slug>.
 -- -----------------------------------------------------------------------------
 create table products (
@@ -41,7 +41,7 @@ create table products (
 create index products_position_idx on products (position, name);
 
 -- -----------------------------------------------------------------------------
--- product_variants — a buyable configuration (finish x storage). Price and MRP
+-- product_variants: a buyable configuration (finish x storage). Price and MRP
 -- live here, not on the product, because they differ per configuration.
 -- -----------------------------------------------------------------------------
 create table product_variants (
@@ -74,7 +74,7 @@ create unique index variants_one_default_per_product
   where is_default;
 
 -- -----------------------------------------------------------------------------
--- emi_plans — the financing ladder offered on a product. Only the *terms* are
+-- emi_plans: the financing ladder offered on a product. Only the *terms* are
 -- stored (tenure, rate, cashback, fee); the monthly instalment is derived from
 -- the selected variant's price at read time, so one row serves every variant.
 -- -----------------------------------------------------------------------------
@@ -99,7 +99,7 @@ create table emi_plans (
 create index plans_product_idx on emi_plans (product_id, position);
 
 -- -----------------------------------------------------------------------------
--- emi_applications — what the "Proceed" button records. The chosen plan's
+-- emi_applications: what the "Proceed" button records. The chosen plan's
 -- derived figures are snapshotted so a later price or rate change never
 -- rewrites an application that was already submitted.
 --

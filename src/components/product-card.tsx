@@ -23,15 +23,16 @@ export function ProductCard({ product }: { product: ProductSummary }) {
           </span>
         ) : null}
 
+        {/* Vendors ship different shapes: Apple a tall transparent PNG, Samsung
+            a wide render on white. A fixed box plus object-contain lets both
+            sit at the same visual size without distortion. */}
         <Image
           src={product.imageUrl}
           alt={`${product.brand} ${product.name}`}
-          width={640}
-          height={800}
-          // Generated SVG: nothing for the optimiser to do, and Next refuses to
-          // optimise SVG by default anyway.
+          width={1000}
+          height={1000}
           unoptimized
-          className="h-48 w-auto transition duration-300 group-hover:scale-[1.03]"
+          className="h-48 w-full object-contain transition duration-300 group-hover:scale-[1.03]"
         />
       </div>
 

@@ -8,7 +8,7 @@ import type { EmiApplication } from '@/lib/types';
 import type { SessionUser } from '@/lib/auth';
 
 /**
- * EMI applications — what the "Proceed" button on a product page records.
+ * EMI applications: what the "Proceed" button on a product page records.
  *
  * The instalment figures are recomputed here from the variant's current price
  * and the plan's current terms, never taken from the request body: the browser

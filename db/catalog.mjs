@@ -1,11 +1,16 @@
 /**
- * Seed catalogue — the single source of truth for `npm run db:seed` and
+ * Seed catalogue: the single source of truth for `npm run db:seed` and
  * `npm run db:images`.
  *
  * Nothing here is read at runtime. The app only ever sees this data after it
  * has been written to Postgres and read back through the API; keeping the two
- * scripts on one definition is what stops a variant's swatch and its rendered
+ * scripts on one definition is what stops a finish's swatch, its price and its
  * artwork from drifting apart.
+ *
+ * Each colour carries an `image` (the filename under public/products/) and a
+ * `source` (where scripts/fetch-product-images.mjs downloads it from). Every
+ * source is the manufacturer's own store CDN, so the artwork is the real device
+ * in the real finish.
  *
  * Prices are whole rupees, matching the `integer` columns in db/schema.sql.
  */
@@ -17,6 +22,10 @@ export function slugify(value) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 }
+
+const APPLE = 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is';
+const SAMSUNG = 'https://images.samsung.com/in/smartphones';
+const GOOGLE = 'https://lh3.googleusercontent.com';
 
 export const PRODUCTS = [
   {
@@ -35,11 +44,25 @@ export const PRODUCTS = [
     isNew: true,
     rating: 4.8,
     reviewCount: 2431,
-    cameraStyle: 'apple',
     colors: [
-      { name: 'Cosmic Orange', hex: '#C86B34', accent: '#FF8A3D' },
-      { name: 'Silver', hex: '#DCDEE1', accent: '#93AEC9' },
-      { name: 'Deep Blue', hex: '#2E4A6B', accent: '#4C8FD1' },
+      {
+        name: 'Cosmic Orange',
+        hex: '#C86B34',
+        image: 'iphone-17-pro-cosmic-orange.png',
+        source: `${APPLE}/iphone-17-pro-finish-select-cosmicorange-202509?wid=940&hei=1112&fmt=png-alpha&.v=NUNzdzNKR0FJbmhKWm5YamRHb05tVmdrMFhaMHcxOUdwN3E1MFVmcEJVQTNyWks3T2VGaWZmcXRuQXczU1ZaZ0V3S0grNWRDVTNuaVhuc2dPbTQ4Q0V1RGVGY05iMGVCVXhlTE1BQUZjMDAxZ3c4akdEMUU0TzY2L3ZNM3pjZ1o`,
+      },
+      {
+        name: 'Silver',
+        hex: '#DCDEE1',
+        image: 'iphone-17-pro-silver.png',
+        source: `${APPLE}/iphone-17-pro-finish-select-silver-202509?wid=940&hei=1112&fmt=png-alpha&.v=NUNzdzNKR0FJbmhKWm5YamRHb05tVGJOdEdsYjE3KzExOGFjT0NXdW5CRVVkSEJvenlBdXoyaDlFZmx3NUNqSlQ5NVJ4OStiQklybHZqYkJwOUI0UWgyOXkwakE4NktvanUvRWt1bE04RG1tZGZRaE5TcFF1Um5PY0c2UnZPZVU`,
+      },
+      {
+        name: 'Deep Blue',
+        hex: '#2E4A6B',
+        image: 'iphone-17-pro-deep-blue.png',
+        source: `${APPLE}/iphone-17-pro-finish-select-deepblue-202509?wid=940&hei=1112&fmt=png-alpha&.v=NUNzdzNKR0FJbmhKWm5YamRHb05tZUV6Rm9QZCtVTmthVDZRTDBVMjU4VUtjUUZlOFlHK1IxMzVQZmxQM3JKakJ2MUJtQ2VhYWlBc1UxbHhMSzFTQjhlcC9qYU9xUXZmS1NmbGxtTVBCNVBzR0ZiVDU2djVyRHE3eS9mZXV0Q1Q`,
+      },
     ],
     storages: [
       { size: '256GB', mrp: 134900, price: 127400 },
@@ -72,11 +95,25 @@ export const PRODUCTS = [
     isNew: false,
     rating: 4.7,
     reviewCount: 3187,
-    cameraStyle: 'samsung',
     colors: [
-      { name: 'Titanium Black', hex: '#3A3B3D', accent: '#6E7A8A' },
-      { name: 'Titanium Gray', hex: '#8A8D91', accent: '#AAB5C1' },
-      { name: 'Titanium Whitesilver', hex: '#DEDCD6', accent: '#B9C6D6' },
+      {
+        name: 'Titanium Black',
+        hex: '#3A3B3D',
+        image: 'galaxy-s25-ultra-titanium-black.jpg',
+        source: `${SAMSUNG}/galaxy-s25-ultra/buy/product_color_black_PC.png`,
+      },
+      {
+        name: 'Titanium Gray',
+        hex: '#8A8D91',
+        image: 'galaxy-s25-ultra-titanium-gray.jpg',
+        source: `${SAMSUNG}/galaxy-s25-ultra/buy/product_color_gray_PC.png`,
+      },
+      {
+        name: 'Titanium Whitesilver',
+        hex: '#DEDCD6',
+        image: 'galaxy-s25-ultra-titanium-whitesilver.jpg',
+        source: `${SAMSUNG}/galaxy-s25-ultra/buy/product_color_whiteSilver_PC.png`,
+      },
     ],
     storages: [
       { size: '256GB', mrp: 129999, price: 119999 },
@@ -108,10 +145,19 @@ export const PRODUCTS = [
     isNew: true,
     rating: 4.6,
     reviewCount: 1204,
-    cameraStyle: 'google',
     colors: [
-      { name: 'Obsidian', hex: '#22242A', accent: '#6E86FF' },
-      { name: 'Porcelain', hex: '#EDE7DD', accent: '#F0B67F' },
+      {
+        name: 'Porcelain',
+        hex: '#EDE7DD',
+        image: 'pixel-10-pro-porcelain.png',
+        source: `${GOOGLE}/bcUVbUQMLQN1ZNMtHeYu9jb_taQtU_wEX1UA7UHHL_watRVemdeXEXJRryHWT8f_iHQDTJrFxZ2sFrfsG9PMsSZA3QJNx3sPCifc=w1000`,
+      },
+      {
+        name: 'Jade',
+        hex: '#BCD3AE',
+        image: 'pixel-10-pro-jade.png',
+        source: `${GOOGLE}/2Vg1iI0kOA5QkpG20fisNjNrXJfPj4hh45wUypykOy-rlymd28eq17BtTvqIAOPP3OXmBpJ4ywa8LLVqWkTb--jCbMXbEbYYEB0=w1000`,
+      },
     ],
     storages: [
       { size: '128GB', mrp: 106999, price: 99999 },
@@ -126,30 +172,44 @@ export const PRODUCTS = [
     ],
   },
   {
-    slug: 'oneplus-13',
-    brand: 'OnePlus',
-    name: 'OnePlus 13',
-    tagline: 'Hasselblad optics and 100W charging, under a lakh.',
+    slug: 'samsung-galaxy-s25',
+    brand: 'Samsung',
+    name: 'Galaxy S25',
+    tagline: 'Flagship silicon in a phone you can hold one-handed.',
     description:
-      'Snapdragon 8 Elite, a 6000mAh silicon-carbon battery and a Hasselblad-tuned triple camera. The shortest EMI ladder on the store starts at three months, interest free.',
+      'The compact Galaxy S25 runs the same Snapdragon 8 Elite as its Ultra sibling behind a 6.2" display. The shortest EMI ladder on the store starts at three months, interest free.',
     highlights: [
-      '6.82" 2K LTPO AMOLED, 4500 nits',
-      'Snapdragon 8 Elite, up to 16GB RAM',
-      'Hasselblad 50MP triple camera',
-      '6000mAh battery, 100W SuperVOOC',
+      '6.2" Dynamic AMOLED 2X, 120Hz',
+      'Snapdragon 8 Elite for Galaxy',
+      '50MP wide + 10MP 3x telephoto',
+      'Galaxy AI with Now Brief',
     ],
     isNew: false,
     rating: 4.5,
-    reviewCount: 876,
-    cameraStyle: 'oneplus',
+    reviewCount: 1876,
     colors: [
-      { name: 'Midnight Ocean', hex: '#1B3E63', accent: '#2F7FD1' },
-      { name: 'Arctic Dawn', hex: '#D9D3C7', accent: '#8FB9A8' },
-      { name: 'Black Eclipse', hex: '#1E1F22', accent: '#7A7F8A' },
+      {
+        name: 'Navy',
+        hex: '#2C3B4E',
+        image: 'galaxy-s25-navy.jpg',
+        source: `${SAMSUNG}/galaxy-s25/buy/product_color_navy_PC.png`,
+      },
+      {
+        name: 'Mint',
+        hex: '#C4DBC6',
+        image: 'galaxy-s25-mint.jpg',
+        source: `${SAMSUNG}/galaxy-s25/buy/product_color_mint_PC.png`,
+      },
+      {
+        name: 'Silver Shadow',
+        hex: '#A9ACAF',
+        image: 'galaxy-s25-silver-shadow.jpg',
+        source: `${SAMSUNG}/galaxy-s25/buy/product_color_silverShadow_PC.png`,
+      },
     ],
     storages: [
-      { size: '256GB', mrp: 72999, price: 69999 },
-      { size: '512GB', mrp: 79999, price: 76999 },
+      { size: '128GB', mrp: 80999, price: 74999 },
+      { size: '256GB', mrp: 85999, price: 79999 },
     ],
     emiPlans: [
       { tenureMonths: 3, interestRate: 0, cashback: 3000 },
@@ -167,7 +227,8 @@ export const PRODUCTS = [
  *
  * The first colour of the first storage tier becomes the product's default
  * variant, which is what the listing page prices against and what the detail
- * page preselects.
+ * page preselects. Artwork is per finish, so every storage tier of a colour
+ * points at the same file.
  */
 export function buildVariants(product) {
   const variants = [];
@@ -179,7 +240,7 @@ export function buildVariants(product) {
         sku: `${product.slug}-${slugify(color.name)}-${slugify(storage.size)}`.toUpperCase(),
         colorName: color.name,
         colorHex: color.hex,
-        accentHex: color.accent,
+        imageUrl: `/products/${color.image}`,
         storage: storage.size,
         mrp: storage.mrp,
         price: storage.price,
@@ -191,13 +252,3 @@ export function buildVariants(product) {
 
   return variants;
 }
-
-/** Flat list consumed by scripts/generate-product-images.mjs. */
-export const VARIANT_RENDERS = PRODUCTS.flatMap((product) =>
-  buildVariants(product).map((variant) => ({
-    sku: variant.sku,
-    colorHex: variant.colorHex,
-    accentHex: variant.accentHex,
-    cameraStyle: product.cameraStyle,
-  })),
-);

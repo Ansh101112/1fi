@@ -11,7 +11,7 @@ export default async function SignInPage({ searchParams }: PageProps<'/sign-in'>
   const { next } = await searchParams;
   const target = Array.isArray(next) ? next[0] : next;
 
-  // Already signed in — send them straight where they were headed.
+  // Already signed in, so send them straight where they were headed.
   if (await getCurrentUser()) {
     redirect(target && target.startsWith('/') && !target.startsWith('//') ? target : '/');
   }

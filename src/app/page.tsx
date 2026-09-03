@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 const STEPS = [
   {
     title: 'Pick a phone and a plan',
-    body: 'Choose your finish and storage, then the tenure that suits you — from 3 months to 5 years.',
+    body: 'Choose your finish and storage, then the tenure that suits you, from 3 months to 5 years.',
   },
   {
     title: 'Pledge, don’t redeem',
@@ -24,15 +24,11 @@ export default async function HomePage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
       <section className="max-w-2xl">
-        <span className="inline-flex items-center gap-2 rounded-full bg-brand-tint px-3 py-1 text-xs font-medium text-brand-strong">
-          <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-          Loan against mutual funds
-        </span>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+        <h1 className="text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
           Buy it now. Keep your portfolio invested.
         </h1>
         <p className="mt-3 text-base leading-relaxed text-ink-muted">
-          Pay for your next phone in instalments backed by the mutual funds you already own — from
+          Pay for your next phone in instalments backed by the mutual funds you already own, from
           0% interest, with no need to sell a single unit.
         </p>
       </section>
@@ -61,21 +57,35 @@ export default async function HomePage() {
         )}
       </section>
 
-      <section className="mt-14 rounded-panel border border-line bg-surface p-6 sm:p-8">
-        <h2 className="text-lg font-semibold text-ink">How the EMI works</h2>
-        <ol className="mt-5 grid gap-6 sm:grid-cols-3">
-          {STEPS.map((step, index) => (
-            <li key={step.title} className="flex gap-3">
+      {/* Collapsed by default: this is reference material, not part of the
+          buying flow, so it stays out of the way until someone asks for it.
+          Native <details> keeps it keyboard-accessible with no client JS. */}
+      <section className="mt-14 rounded-panel border border-line bg-surface px-6 py-2 sm:px-8">
+        {STEPS.map((step, index) => (
+          <details key={step.title} className="group border-b border-line last:border-b-0">
+            <summary className="flex cursor-pointer list-none items-center gap-3 py-4 [&::-webkit-details-marker]:hidden">
               <span className="tnum grid h-7 w-7 shrink-0 place-items-center rounded-full bg-sunken text-xs font-semibold text-ink">
                 {index + 1}
               </span>
-              <div>
-                <h3 className="text-sm font-semibold text-ink">{step.title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-ink-muted">{step.body}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
+              <h2 className="flex-1 text-sm font-semibold text-ink">{step.title}</h2>
+              <svg
+                viewBox="0 0 20 20"
+                className="h-4 w-4 shrink-0 text-ink-faint transition group-open:rotate-180"
+                fill="none"
+                aria-hidden
+              >
+                <path
+                  d="m6 8 4 4 4-4"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </summary>
+            <p className="pb-4 pl-10 text-sm leading-relaxed text-ink-muted">{step.body}</p>
+          </details>
+        ))}
       </section>
     </main>
   );

@@ -6,7 +6,7 @@ import { createNeonAuth } from '@neondatabase/auth/next/server';
  * Server-side Neon Auth singleton.
  *
  * Neon Auth runs as a hosted service against the same Neon project as the app
- * database — it owns the `neon_auth` schema, which is why db/schema.sql never
+ * database. It owns the `neon_auth` schema, which is why db/schema.sql never
  * touches it. `auth.handler()` proxies the browser's /api/auth/* calls upstream
  * and mints a signed, httpOnly session cookie on this origin, so the auth
  * service's own cookie never has to be readable cross-site.

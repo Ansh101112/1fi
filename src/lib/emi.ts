@@ -34,7 +34,7 @@ export type EmiQuote = {
  *     EMI = P * r * (1 + r)^n / ((1 + r)^n - 1)
  *
  * where `r` is the monthly rate and `n` the tenure in months. At r = 0 that
- * expression is 0/0, so no-cost plans simply split the principal evenly — the
+ * expression is 0/0, so no-cost plans simply split the principal evenly. The
  * total payable stays exactly the principal, which is what "no cost" means.
  */
 export function calculateEmi(principal: number, terms: EmiTerms): EmiQuote {

@@ -5,7 +5,7 @@ import { createApplication, listApplications } from '@/lib/applications';
 import type { ApiError, EmiApplication } from '@/lib/types';
 
 /**
- * /api/applications — the EMI applications belonging to the signed-in user.
+ * /api/applications: the EMI applications belonging to the signed-in user.
  *
  * GET  lists them, newest first.
  * POST records the plan chosen on a product page.

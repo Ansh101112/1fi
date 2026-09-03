@@ -14,7 +14,7 @@ import type { EmiPlan, ProductDetail, ProductVariant } from '@/lib/types';
  *
  * Every variant arrives from the server with its EMI ladder already priced, so
  * switching finish or storage re-reads props rather than re-fetching. Nothing
- * here recomputes money — it only chooses which precomputed quote to show.
+ * here recomputes money: it only chooses which precomputed quote to show.
  */
 
 type Props = {
@@ -161,11 +161,11 @@ export function ProductConfigurator({ product, initialVariantId, isSignedIn }: P
             key={variant.sku}
             src={variant.imageUrl}
             alt={`${product.brand} ${product.name} in ${variant.colorName}`}
-            width={640}
-            height={800}
+            width={1000}
+            height={1000}
             unoptimized
             priority
-            className="h-72 w-auto sm:h-80"
+            className="h-72 w-full object-contain sm:h-80"
           />
         </div>
 
@@ -341,7 +341,7 @@ export function ProductConfigurator({ product, initialVariantId, isSignedIn }: P
   );
 }
 
-/** One selectable row in the EMI ladder — the reference layout. */
+/** One selectable row in the EMI ladder, matching the reference layout. */
 function PlanOption({
   plan,
   selected,

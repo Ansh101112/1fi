@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { queryOne } from '@/lib/db';
 
 /**
- * GET /api/health — a liveness probe that actually touches the database.
+ * GET /api/health: a liveness probe that actually touches the database.
  *
  * Returns 503 when Postgres is unreachable so a deploy check can tell a broken
  * connection string apart from a healthy app.

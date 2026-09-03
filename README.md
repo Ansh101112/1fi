@@ -1,8 +1,8 @@
-# 1Fi — buy on EMI, backed by mutual funds
+# 1Fi: buy on EMI, backed by mutual funds
 
 A full-stack storefront for smartphones sold on instalments funded by a loan
 against pledged mutual fund units. Every product, variant, price, image path and
-EMI plan is served from PostgreSQL through the app's own APIs — nothing in the
+EMI plan is served from PostgreSQL through the app's own APIs. Nothing in the
 UI is hardcoded.
 
 ```
@@ -11,14 +11,14 @@ Next.js 16 (App Router, React 19) · Tailwind CSS v4 · PostgreSQL on Neon · Ne
 
 ## What it does
 
-- **Dynamic product pages** at `/products/<slug>` — name, finish, storage, MRP,
+- **Dynamic product pages** at `/products/<slug>` with name, finish, storage, MRP,
   selling price and artwork, all read from the database.
 - **Selectable EMI ladder** per product: monthly instalment, tenure, interest
   rate and cashback, with a live breakdown of interest, total payable and
   effective cost for the plan you pick.
-- **Variant matrix** — changing finish or storage reprices the whole ladder
+- **Variant matrix**: changing finish or storage reprices the whole ladder
   instantly, and the exact configuration is linkable via `?variant=<sku>`.
-- **Proceed with a plan** — signed-in users submit an application, which is
+- **Proceed with a plan**: signed-in users submit an application, which is
   snapshotted and given a reference at `/applications/<reference>`.
 - **Authentication** via Neon Auth (email + password, or Google).
 
@@ -29,7 +29,7 @@ Four products, 25 variants and 25 plan definitions ship in the seed.
 ```bash
 npm install
 cp .env.example .env.local   # then fill in the three values
-npm run db:reset             # generates artwork, applies the schema, seeds it
+npm run db:reset             # downloads artwork, applies the schema, seeds it
 npm run dev
 ```
 
@@ -38,21 +38,21 @@ npm run dev
 | Variable | What it is |
 | --- | --- |
 | `DATABASE_URL` | Neon Postgres connection string |
-| `NEON_AUTH_BASE_URL` | Auth route root of your Neon Auth instance — `https://<endpoint-id>.neonauth.<region>.aws.neon.tech/<database>/auth` |
+| `NEON_AUTH_BASE_URL` | Auth route root of your Neon Auth instance, shaped `https://<endpoint-id>.neonauth.<region>.aws.neon.tech/<database>/auth` |
 | `NEON_AUTH_COOKIE_SECRET` | 32+ characters; signs the local session cookie (`openssl rand -hex 32`) |
 
 The `NEON_AUTH_BASE_URL` shape matters: the hosted service routes as
 `/<database>/auth/<method>`, and the client appends the method itself. Point it
 at `.../neondb` and every call 404s. `GET <base>/ok` should return `{"ok":true}`.
 
-Other scripts: `npm run db:images` (regenerate artwork only), `npm run db:seed`
+Other scripts: `npm run db:images` (re-download artwork only), `npm run db:seed`
 (schema + data only), `npm run typecheck`, `npm run lint`, `npm run build`.
 
 ### Deploying
 
 Neon Auth allows `localhost` out of the box but nothing else. Before the first
 deploy, add the production origin to **Trusted origins** in the Neon Auth
-settings for the project — otherwise sign-in fails CORS on the deployed domain
+settings for the project. Otherwise sign-in fails CORS on the deployed domain
 while working perfectly in development. Set the same three environment
 variables on the host.
 
@@ -71,7 +71,7 @@ variables on the host.
 serves both `/api/products/iphone-17-pro` and `/api/products/<uuid>`.
 
 The detail response prices every variant's ladder server-side. That is why
-switching finish or storage in the UI is instant and never refetches — and why
+switching finish or storage in the UI is instant and never refetches, and why
 the browser can never influence what a plan costs.
 
 ## Schema
@@ -83,12 +83,12 @@ products ──< product_variants ──< emi_applications >── emi_plans
     └──────────────────────────────────────────────────┘
 ```
 
-- **`products`** — model-level copy and the `slug` that gives each product its URL.
-- **`product_variants`** — one row per finish × storage, holding `mrp`, `price`
+- **`products`**: model-level copy and the `slug` that gives each product its URL.
+- **`product_variants`**: one row per finish × storage, holding `mrp`, `price`
   and `image_url`. Prices live here because they differ per configuration.
-- **`emi_plans`** — the ladder offered on a product. Stores only *terms*
+- **`emi_plans`**: the ladder offered on a product. Stores only *terms*
   (tenure, rate, cashback, fee), never an instalment amount.
-- **`emi_applications`** — a submitted plan, with its figures snapshotted.
+- **`emi_applications`**: a submitted plan, with its figures snapshotted.
 
 Two decisions worth calling out:
 
@@ -100,7 +100,7 @@ node-postgres.
 **Instalments are derived, not stored.** One `emi_plans` row serves every
 variant of a product, so a price change reprices the ladder with no data
 migration and the 9 iPhone variants share 7 plan rows rather than 63. The
-snapshot on `emi_applications` is the deliberate exception — a submitted
+snapshot on `emi_applications` is the deliberate exception. A submitted
 application must not be rewritten by a later price change.
 
 ## The EMI arithmetic
@@ -115,20 +115,30 @@ EMI = P · r · (1 + r)ⁿ / ((1 + r)ⁿ − 1)
 
 with `r` the monthly rate and `n` the tenure. At `r = 0` that expression is
 0/0, so no-cost plans split the principal evenly instead; the headline total
-stays exactly the principal and the final instalment absorbs the rounding —
+stays exactly the principal and the final instalment absorbs the rounding,
 which is what "no cost" has to mean.
 
-Worked example — iPhone 17 Pro 1TB at ₹1,65,900 over 36 months at 10.5%:
+Worked example. iPhone 17 Pro 1TB at ₹1,65,900 over 36 months at 10.5%:
 ₹5,392/month, ₹1,94,112 total, ₹28,212 interest, ₹1,86,612 after ₹7,500
 cashback.
 
 ## Notes on the build
 
-**Product artwork is generated, not sourced.**
-[`scripts/generate-product-images.mjs`](scripts/generate-product-images.mjs)
-renders one SVG per variant from the same catalogue the seed uses, so a finish
-always matches its swatch hex exactly and there is no third-party image host in
-the critical path. The database still owns every image *path*.
+**Product artwork comes from the manufacturers.**
+[`scripts/fetch-product-images.mjs`](scripts/fetch-product-images.mjs) downloads
+the render each vendor's own store serves for that exact finish, so the swatch
+and the photograph always agree. Files land in `public/products/` and the
+database owns every image *path*.
+
+Those URLs carry cache-busting tokens the vendors rotate, so a 404 means the
+token moved on: reopen the buy page, read the new URL off it, and update
+[`db/catalog.mjs`](db/catalog.mjs). Files already on disk are kept when a fetch
+fails, so a stale token never leaves the catalogue without artwork. Vendors also
+ship different shapes, Apple a tall transparent PNG and Samsung a wide render on
+white, which is why every image sits in a fixed box with `object-contain`.
+
+These are third-party marketing assets dressing a demo catalogue. A production
+storefront would serve assets it holds the rights to.
 
 **Route protection is page-level, not middleware.** Neon Auth ships a
 `neonAuthMiddleware`, but it redirects to a bare login URL and so loses the
@@ -137,7 +147,7 @@ destination. The server-side guard in each protected page redirects to
 you back to the exact variant you were configuring.
 
 **Sign-in and sign-out do a full navigation.** The header lives in the root
-layout, which the App Router keeps mounted across client-side navigation — a
+layout, which the App Router keeps mounted across client-side navigation, so a
 `router.push` would land on the destination still wearing a signed-out header.
 
 **Auth errors are thrown, not returned.** Neon Auth's client throws a typed
@@ -151,10 +161,10 @@ Without that, "User already exists" surfaced as a generic network failure.
 ```
 db/
   schema.sql      DDL, re-runnable
-  catalog.mjs     seed catalogue — shared by the seeder and the artwork script
+  catalog.mjs     seed catalogue, shared by the seeder and the image fetcher
   seed.mjs        applies the schema and loads the catalogue
 scripts/
-  generate-product-images.mjs
+  fetch-product-images.mjs
 src/
   app/
     api/          route handlers

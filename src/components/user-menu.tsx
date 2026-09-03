@@ -18,7 +18,7 @@ export function UserMenu({ user }: { user: SessionUser }) {
   const [signingOut, setSigningOut] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close on an outside click or Escape — a menu that can only be dismissed by
+  // Close on an outside click or Escape. A menu that can only be dismissed by
   // navigating is a trap on touch devices.
   useEffect(() => {
     if (!open) return;
@@ -46,7 +46,9 @@ export function UserMenu({ user }: { user: SessionUser }) {
       await signOut();
       // Full navigation for the same reason sign-in uses one: the header is
       // rendered by the root layout, which survives client-side navigation and
-      // would otherwise keep showing the signed-out user's name.
+      // would otherwise keep showing the signed-out user's name. router.push
+      // is what the lint rule wants, and it is exactly what does not work here.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.assign('/');
     } catch {
       setSigningOut(false);
@@ -60,13 +62,15 @@ export function UserMenu({ user }: { user: SessionUser }) {
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-haspopup="menu"
-        className="flex items-center gap-2 rounded-full border border-line bg-surface py-1 pl-1 pr-3 text-sm font-medium text-ink transition hover:border-line-strong"
+        aria-label={`Account menu for ${user.name || user.email}`}
+        className="flex items-center gap-1 rounded-full border border-line bg-surface p-1 text-sm font-medium text-ink transition hover:border-line-strong"
       >
+        {/* Avatar only: the full name lives in the open menu, where it has the
+            room to render without being truncated mid-word. */}
         <span className="grid h-7 w-7 place-items-center rounded-full bg-brand-tint text-xs font-semibold text-brand-strong">
           {initials(user)}
         </span>
-        <span className="hidden max-w-28 truncate sm:block">{user.name || user.email}</span>
-        <svg viewBox="0 0 20 20" className="h-4 w-4 text-ink-faint" fill="none" aria-hidden>
+        <svg viewBox="0 0 20 20" className="mr-0.5 h-4 w-4 text-ink-faint" fill="none" aria-hidden>
           <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>

@@ -1,6 +1,6 @@
 /**
  * The shapes the API returns. These are the contract between the route
- * handlers in src/app/api and everything that renders — keep them in camelCase
+ * handlers in src/app/api and everything that renders. Keep them in camelCase
  * even though the columns behind them are snake_case.
  */
 
@@ -14,7 +14,7 @@ export type EmiPlan = {
   processingFee: number;
   fundedBy: string;
   isPopular: boolean;
-  /** Derived fields — see src/lib/emi.ts. All whole rupees. */
+  /** Derived fields, computed in src/lib/emi.ts. All whole rupees. */
   principal: number;
   monthlyAmount: number;
   totalPayable: number;
@@ -51,7 +51,7 @@ export type LowestEmi = {
   interestRate: number;
 };
 
-/** What /api/products returns per row — enough to render a card. */
+/** What /api/products returns per row: enough to render a card. */
 export type ProductSummary = {
   id: string;
   slug: string;

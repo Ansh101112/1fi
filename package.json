@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 3000",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --port 3000",
     "lint": "eslint",
-    "db:images": "node scripts/generate-product-images.mjs",
+    "db:images": "node scripts/fetch-product-images.mjs",
     "db:seed": "node --env-file=.env.local db/seed.mjs",
     "db:reset": "npm run db:images && npm run db:seed",
     "typecheck": "tsc --noEmit"
