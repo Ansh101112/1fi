@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { signOut } from '@/lib/auth-client';
 import type { SessionUser } from '@/lib/auth';
 
-/** `Ansh Tiwari` -> `AT`; falls back to the email's first letter. */
+/** "Ansh Tiwari" -> "AT", falling back to the email. */
 function initials(user: SessionUser): string {
   const source = user.name?.trim() || user.email;
   const parts = source.split(/[\s@._-]+/).filter(Boolean);
@@ -18,8 +18,7 @@ export function UserMenu({ user }: { user: SessionUser }) {
   const [signingOut, setSigningOut] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close on an outside click or Escape. A menu that can only be dismissed by
-  // navigating is a trap on touch devices.
+  // Close on outside click or Escape, otherwise it traps you on touch.
   useEffect(() => {
     if (!open) return;
 
@@ -44,10 +43,9 @@ export function UserMenu({ user }: { user: SessionUser }) {
     setSigningOut(true);
     try {
       await signOut();
-      // Full navigation for the same reason sign-in uses one: the header is
-      // rendered by the root layout, which survives client-side navigation and
-      // would otherwise keep showing the signed-out user's name. router.push
-      // is what the lint rule wants, and it is exactly what does not work here.
+      // Full navigation, same reason as sign-in: the root layout survives
+      // client navigation and would keep showing the old user. router.push is
+      // what the lint rule wants and is exactly what does not work here.
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.assign('/');
     } catch {
@@ -65,8 +63,7 @@ export function UserMenu({ user }: { user: SessionUser }) {
         aria-label={`Account menu for ${user.name || user.email}`}
         className="flex items-center gap-1 rounded-full border border-line bg-surface p-1 text-sm font-medium text-ink transition hover:border-line-strong"
       >
-        {/* Avatar only: the full name lives in the open menu, where it has the
-            room to render without being truncated mid-word. */}
+        {/* Avatar only. The full name goes in the menu, where it fits. */}
         <span className="grid h-7 w-7 place-items-center rounded-full bg-brand-tint text-xs font-semibold text-brand-strong">
           {initials(user)}
         </span>

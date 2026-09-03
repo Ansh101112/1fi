@@ -2,12 +2,8 @@ import { NextResponse } from 'next/server';
 
 import { queryOne } from '@/lib/db';
 
-/**
- * GET /api/health: a liveness probe that actually touches the database.
- *
- * Returns 503 when Postgres is unreachable so a deploy check can tell a broken
- * connection string apart from a healthy app.
- */
+// Liveness probe that actually hits the database. 503 when Postgres is
+// unreachable, so a deploy check can spot a bad connection string.
 
 export const dynamic = 'force-dynamic';
 

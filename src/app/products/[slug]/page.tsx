@@ -31,8 +31,8 @@ export default async function ProductPage({ params, searchParams }: PageProps<'/
 
   if (!product) notFound();
 
-  // ?variant=<sku> makes an exact configuration linkable. An unknown sku falls
-  // back to the product default rather than 404-ing the whole page.
+  // ?variant=<sku> makes a configuration linkable. An unknown sku falls back
+  // to the default instead of 404-ing the page.
   const requested = Array.isArray(requestedSku) ? requestedSku[0] : requestedSku;
   const initialVariant =
     product.variants.find((candidate) => candidate.sku === requested) ??

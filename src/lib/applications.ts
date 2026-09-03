@@ -7,14 +7,11 @@ import { calculateEmi } from '@/lib/emi';
 import type { EmiApplication } from '@/lib/types';
 import type { SessionUser } from '@/lib/auth';
 
-/**
- * EMI applications: what the "Proceed" button on a product page records.
- *
- * The instalment figures are recomputed here from the variant's current price
- * and the plan's current terms, never taken from the request body: the browser
- * gets to choose *which* variant and plan, not what they cost. The result is
- * then snapshotted onto the row so a later price change cannot rewrite history.
- */
+// What the Proceed button records.
+//
+// The figures are recomputed from the variant price and the plan terms, never
+// taken from the request body, then snapshotted onto the row so a later price
+// change cannot rewrite an application that is already in.
 
 type ApplicationRow = {
   id: string;
@@ -80,7 +77,7 @@ function toApplication(row: ApplicationRow): EmiApplication {
   };
 }
 
-/** `1FI-` plus 8 crockford-ish uppercase characters, matching the CHECK constraint. */
+/** 1FI- plus 8 uppercase characters, matching the CHECK constraint. */
 function generateReference(): string {
   const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const bytes = randomBytes(8);
@@ -116,8 +113,8 @@ export async function createApplication(
   if (!variant) return { ok: false, reason: 'variant_not_found' };
   if (!variant.in_stock) return { ok: false, reason: 'out_of_stock' };
 
-  // Scoped to the variant's product so a plan cannot be borrowed from a
-  // cheaper product to get its rate.
+  // Scoped to the variant's product, so nobody can borrow a cheaper
+  // product's rate.
   const plan = await queryOne<{
     id: string;
     tenure_months: number;

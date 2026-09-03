@@ -11,14 +11,8 @@ import type {
   ProductVariant,
 } from '@/lib/types';
 
-/**
- * Catalogue reads.
- *
- * Everything here loads products, variants and plans in three flat queries and
- * stitches them together in memory rather than looping a query per product.
- * That keeps the round-trip count constant as the catalogue grows, which
- * matters on a serverless Postgres where each round trip is a network hop.
- */
+// Catalogue reads. Products, variants and plans come back in three flat
+// queries and get stitched together here, rather than a query per product.
 
 type ProductRow = {
   id: string;
@@ -71,7 +65,7 @@ const PLAN_COLUMNS = `
   e.id, e.product_id, e.tenure_months, e.interest_rate, e.cashback,
   e.processing_fee, e.funded_by, e.is_popular`;
 
-/** Groups rows by their product_id, preserving the SQL ordering within a group. */
+/** Group rows by product_id, keeping the SQL order. */
 function groupByProduct<T extends { product_id: string }>(rows: T[]): Map<string, T[]> {
   const grouped = new Map<string, T[]>();
   for (const row of rows) {
@@ -82,7 +76,7 @@ function groupByProduct<T extends { product_id: string }>(rows: T[]): Map<string
   return grouped;
 }
 
-/** Prices a product's whole plan ladder against one variant's price. */
+/** Price the whole plan ladder against one variant. */
 function quotePlans(plans: PlanRow[], price: number): EmiPlan[] {
   return plans.map((plan) => {
     const quote = calculateEmi(price, {
@@ -115,7 +109,7 @@ function pickDefaultVariant(variants: VariantRow[]): VariantRow | undefined {
   return variants.find((variant) => variant.is_default) ?? variants[0];
 }
 
-/** Distinct colours in variant order, as shown in a product card swatch row. */
+/** Distinct colours, in variant order. */
 function distinctColors(variants: VariantRow[]): ColorOption[] {
   const seen = new Map<string, ColorOption>();
   for (const variant of variants) {
@@ -198,7 +192,7 @@ function toVariant(variant: VariantRow, plans: PlanRow[]): ProductVariant {
   };
 }
 
-/** Every product, as cards. Products without variants are skipped, since they are unbuyable. */
+/** Every product as a card. Products with no variants are skipped. */
 export async function listProducts(): Promise<ProductSummary[]> {
   const products = await query<ProductRow>(
     `select ${PRODUCT_COLUMNS} from products p order by p.position, p.name`,
@@ -234,12 +228,7 @@ export async function listProducts(): Promise<ProductSummary[]> {
     .filter((summary): summary is ProductSummary => summary !== null);
 }
 
-/**
- * One product with every variant and its priced plan ladder.
- *
- * Accepts either the slug (what the URLs use) or the uuid, so
- * /api/products/:id works for both without a second endpoint.
- */
+/** One product with all its variants and their priced plans. Slug or uuid. */
 export async function getProduct(idOrSlug: string): Promise<ProductDetail | null> {
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
 

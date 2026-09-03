@@ -3,15 +3,10 @@ import { NextResponse } from 'next/server';
 import { listProducts } from '@/lib/products';
 import type { ApiError, ProductSummary } from '@/lib/types';
 
-/**
- * GET /api/products
- *
- * Every product as a card: colours, storage tiers, the cheapest variant's
- * price and the lowest monthly instalment available on it.
- */
-
-// Prices and plans are editable in the database at any time, so this must never
-// be prerendered at build time.
+// GET /api/products
+//
+// Every product as a card: colours, storage tiers, cheapest price and the
+// lowest instalment on offer. Never prerendered, since prices can change.
 export const dynamic = 'force-dynamic';
 
 export async function GET(): Promise<NextResponse<{ products: ProductSummary[] } | ApiError>> {

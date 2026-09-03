@@ -1,23 +1,16 @@
--- =============================================================================
--- 1Fi: EMI-on-mutual-funds storefront
--- Application schema (public). Neon Auth owns the `neon_auth` schema separately.
+-- App tables. Neon Auth owns the neon_auth schema, so nothing here touches it.
 --
--- Money convention: every amount is a whole number of Indian rupees stored as
--- `integer`. Indian retail prices are quoted in whole rupees and the largest
--- value we handle is well inside int4, so this avoids both floating-point
--- rounding and the string-typed results `numeric` returns through node-postgres.
--- =============================================================================
+-- Money is whole rupees in an `integer`. Indian prices are quoted in whole
+-- rupees and everything here fits int4, which keeps us clear of float rounding
+-- and of the strings node-postgres returns for `numeric`.
 
--- Dropped children-first so the file is safely re-runnable.
+-- Children first, so the file can be re-run.
 drop table if exists emi_applications cascade;
 drop table if exists emi_plans        cascade;
 drop table if exists product_variants cascade;
 drop table if exists products         cascade;
 
--- -----------------------------------------------------------------------------
--- products: one row per model. The `slug` is the public URL key, which is what
--- gives every product its own address at /products/<slug>.
--- -----------------------------------------------------------------------------
+-- One row per model. The slug is the URL key: /products/<slug>.
 create table products (
   id           uuid        primary key default gen_random_uuid(),
   slug         text        not null unique,
@@ -40,10 +33,8 @@ create table products (
 
 create index products_position_idx on products (position, name);
 
--- -----------------------------------------------------------------------------
--- product_variants: a buyable configuration (finish x storage). Price and MRP
--- live here, not on the product, because they differ per configuration.
--- -----------------------------------------------------------------------------
+-- A buyable configuration (finish x storage). Price and MRP live here rather
+-- than on the product because they differ per configuration.
 create table product_variants (
   id         uuid        primary key default gen_random_uuid(),
   product_id uuid        not null references products (id) on delete cascade,
@@ -67,17 +58,14 @@ create table product_variants (
 
 create index variants_product_idx on product_variants (product_id, position);
 
--- At most one default variant per product; the API falls back to the lowest
--- `position` when a product has none.
+-- At most one default per product. The API falls back to the lowest position.
 create unique index variants_one_default_per_product
   on product_variants (product_id)
   where is_default;
 
--- -----------------------------------------------------------------------------
--- emi_plans: the financing ladder offered on a product. Only the *terms* are
--- stored (tenure, rate, cashback, fee); the monthly instalment is derived from
--- the selected variant's price at read time, so one row serves every variant.
--- -----------------------------------------------------------------------------
+-- The financing ladder for a product. Only the terms are stored; the monthly
+-- instalment is worked out from the chosen variant's price at read time, so
+-- one row covers every variant.
 create table emi_plans (
   id             uuid         primary key default gen_random_uuid(),
   product_id     uuid         not null references products (id) on delete cascade,
@@ -98,14 +86,11 @@ create table emi_plans (
 
 create index plans_product_idx on emi_plans (product_id, position);
 
--- -----------------------------------------------------------------------------
--- emi_applications: what the "Proceed" button records. The chosen plan's
--- derived figures are snapshotted so a later price or rate change never
--- rewrites an application that was already submitted.
+-- What the Proceed button records. The figures are snapshotted so a later
+-- price change never rewrites an application that is already submitted.
 --
--- `user_id` points at neon_auth."user".id but is deliberately not a foreign key:
--- the auth schema is managed by Neon and may be reset independently of ours.
--- -----------------------------------------------------------------------------
+-- user_id points at neon_auth."user".id but is not a foreign key: Neon manages
+-- that schema and can reset it independently of ours.
 create table emi_applications (
   id             uuid        primary key default gen_random_uuid(),
   reference      text        not null unique,

@@ -1,12 +1,9 @@
-/**
- * Applies db/schema.sql and loads the catalogue into Postgres.
- *
- * Destructive by design: schema.sql drops and recreates the application tables
- * so the seed is idempotent. It never touches the `neon_auth` schema, which
- * Neon manages, so signed-up users survive a reseed.
- *
- * Run: npm run db:seed
- */
+// Applies db/schema.sql, then loads the catalogue.
+//
+// Destructive on purpose: the schema drops and recreates the app tables, so
+// this is safe to re-run. It leaves neon_auth alone, so accounts survive.
+//
+// Run: npm run db:seed
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

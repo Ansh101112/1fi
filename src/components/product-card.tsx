@@ -23,9 +23,7 @@ export function ProductCard({ product }: { product: ProductSummary }) {
           </span>
         ) : null}
 
-        {/* Vendors ship different shapes: Apple a tall transparent PNG, Samsung
-            a wide render on white. A fixed box plus object-contain lets both
-            sit at the same visual size without distortion. */}
+        {/* Vendors ship different shapes, so a fixed box plus object-contain. */}
         <Image
           src={product.imageUrl}
           alt={`${product.brand} ${product.name}`}

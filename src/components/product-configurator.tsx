@@ -8,14 +8,10 @@ import { useMemo, useState } from 'react';
 import { formatRupees, formatTenure } from '@/lib/emi';
 import type { EmiPlan, ProductDetail, ProductVariant } from '@/lib/types';
 
-/**
- * Product page interaction: pick a finish and storage, pick an EMI plan,
- * proceed.
- *
- * Every variant arrives from the server with its EMI ladder already priced, so
- * switching finish or storage re-reads props rather than re-fetching. Nothing
- * here recomputes money: it only chooses which precomputed quote to show.
- */
+// Pick a finish and storage, pick a plan, proceed.
+//
+// Every variant arrives with its EMI ladder already priced, so switching
+// finish just reads props. Nothing here does money maths.
 
 type Props = {
   product: ProductDetail;
@@ -23,7 +19,7 @@ type Props = {
   isSignedIn: boolean;
 };
 
-/** The plan a product should land on: the flagged one, else the first. */
+/** Land on the flagged plan, else the first. */
 function defaultPlanId(variant: ProductVariant): string | null {
   return (variant.emiPlans.find((plan) => plan.isPopular) ?? variant.emiPlans[0])?.id ?? null;
 }
@@ -48,8 +44,8 @@ export function ProductConfigurator({ product, initialVariantId, isSignedIn }: P
     const exact = product.variants.find(
       (candidate) => candidate.colorName === colorName && candidate.storage === storage,
     );
-    // A colour x storage pair can be missing from the catalogue; fall back to
-    // the same colour in another size rather than rendering nothing.
+    // A colour x storage pair may not exist. Fall back to the same colour
+    // in another size rather than rendering nothing.
     return (
       exact ??
       product.variants.find((candidate) => candidate.colorName === colorName) ??
@@ -61,10 +57,9 @@ export function ProductConfigurator({ product, initialVariantId, isSignedIn }: P
     variant.emiPlans.find((plan) => plan.id === planId) ?? variant.emiPlans[0] ?? null;
 
   /**
-   * Keeps ?variant= in step with the selection so the exact configuration can
-   * be linked or reloaded. `history.replaceState` rather than router.replace:
-   * this must not re-run the server component or add history entries as the
-   * user tries finishes.
+   * Keeps ?variant= in sync so a configuration can be linked or reloaded.
+   * replaceState, not router.replace: trying finishes shouldn't re-run the
+   * server component or pile up history entries.
    */
   function syncUrl(next: ProductVariant) {
     if (typeof window === 'undefined') return;
@@ -129,9 +124,6 @@ export function ProductConfigurator({ product, initialVariantId, isSignedIn }: P
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-8">
-      {/* ---------------------------------------------------------------- */}
-      {/* Product panel                                                     */}
-      {/* ---------------------------------------------------------------- */}
       <section className="flex flex-col rounded-panel border border-line bg-surface p-6 sm:p-8">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -169,7 +161,6 @@ export function ProductConfigurator({ product, initialVariantId, isSignedIn }: P
           />
         </div>
 
-        {/* Finish ------------------------------------------------------- */}
         <fieldset className="mt-6">
           <legend className="text-xs font-medium uppercase tracking-wide text-ink-faint">
             Finish
@@ -201,7 +192,6 @@ export function ProductConfigurator({ product, initialVariantId, isSignedIn }: P
           </div>
         </fieldset>
 
-        {/* Storage ------------------------------------------------------ */}
         <fieldset className="mt-5">
           <legend className="text-xs font-medium uppercase tracking-wide text-ink-faint">
             Storage
@@ -257,9 +247,6 @@ export function ProductConfigurator({ product, initialVariantId, isSignedIn }: P
         </ul>
       </section>
 
-      {/* ---------------------------------------------------------------- */}
-      {/* Pricing and plans                                                 */}
-      {/* ---------------------------------------------------------------- */}
       <section className="flex flex-col rounded-panel border border-line bg-surface p-6 sm:p-8">
         <div>
           <p className="tnum text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
@@ -341,7 +328,7 @@ export function ProductConfigurator({ product, initialVariantId, isSignedIn }: P
   );
 }
 
-/** One selectable row in the EMI ladder, matching the reference layout. */
+/** One row in the EMI ladder. */
 function PlanOption({
   plan,
   selected,
@@ -392,7 +379,7 @@ function PlanOption({
   );
 }
 
-/** The arithmetic behind the selected plan, so the numbers can be checked. */
+/** The maths behind the selected plan, so it can be checked. */
 function PlanSummary({ plan }: { plan: EmiPlan }) {
   const rows: Array<{ label: string; value: string; tone?: 'gain' }> = [
     { label: 'Amount financed', value: formatRupees(plan.principal) },

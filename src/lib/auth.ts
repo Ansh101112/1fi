@@ -2,15 +2,8 @@ import 'server-only';
 
 import { createNeonAuth } from '@neondatabase/auth/next/server';
 
-/**
- * Server-side Neon Auth singleton.
- *
- * Neon Auth runs as a hosted service against the same Neon project as the app
- * database. It owns the `neon_auth` schema, which is why db/schema.sql never
- * touches it. `auth.handler()` proxies the browser's /api/auth/* calls upstream
- * and mints a signed, httpOnly session cookie on this origin, so the auth
- * service's own cookie never has to be readable cross-site.
- */
+// Neon Auth runs as a hosted service on the same Neon project. It owns the
+// neon_auth schema, which is why db/schema.sql never touches it.
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -35,11 +28,8 @@ export type SessionUser = {
 };
 
 /**
- * The signed-in user, or null.
- *
- * Never throws: the header renders on every page, and a transient failure
- * reaching the auth service should degrade to a signed-out header rather than
- * take the whole page down.
+ * The signed-in user, or null. Never throws: the header is on every page, so a
+ * blip reaching the auth service should show a signed-out header, not a crash.
  */
 export async function getCurrentUser(): Promise<SessionUser | null> {
   try {

@@ -22,10 +22,8 @@ export const metadata: Metadata = {
     'Pledge your mutual funds and pay for your next phone in instalments from 0% interest. Your portfolio stays invested.',
 };
 
-/**
- * The header reads the session, so every page is rendered per-request. Product
- * data is dynamic anyway: it all comes from Postgres on each request.
- */
+// The header reads the session, so pages render per request. Product data
+// comes from Postgres on every request anyway.
 export const dynamic = 'force-dynamic';
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {

@@ -6,13 +6,8 @@ import { useState } from 'react';
 
 import { signIn, signUp } from '@/lib/auth-client';
 
-/**
- * Email/password and Google sign-in against Neon Auth.
- *
- * Both modes share this component because they differ only by which client
- * method they call and which copy they show. Splitting them duplicated the
- * error handling and the redirect dance.
- */
+// Email/password and Google sign-in. Sign-in and sign-up share this because
+// they only differ by which client method they call and what the copy says.
 
 type Mode = 'sign-in' | 'sign-up';
 
@@ -35,13 +30,10 @@ const COPY = {
   },
 } as const;
 
-/** Neon Auth's minimum; enforced here so the failure is inline, not a round trip. */
+/** Neon Auth's minimum. Checked here so the error is inline. */
 const MIN_PASSWORD_LENGTH = 8;
 
-/**
- * Only same-origin paths are honoured, so a crafted ?next= cannot bounce a
- * freshly authenticated user off to another site.
- */
+/** Same-origin paths only, so ?next= cannot bounce anyone off-site. */
 function safeRedirect(next: string | undefined): string {
   if (!next || !next.startsWith('/') || next.startsWith('//')) return '/';
   return next;
@@ -50,12 +42,9 @@ function safeRedirect(next: string | undefined): string {
 const GENERIC_ERROR = 'Could not reach the authentication service. Please try again.';
 
 /**
- * Turns whatever the client produced into something worth showing.
- *
- * Neon Auth's client does not return `{ error }` for a failed request the way
- * plain Better Auth does. It *throws* a typed error. Without this, a real
- * answer like "User already exists" surfaced as a network error and left the
- * user with no idea what to change.
+ * Neon Auth throws a typed error instead of returning { error } the way plain
+ * Better Auth does. Without this, "User already exists" showed up as a
+ * network failure and told the user nothing.
  */
 function describeAuthError(error: unknown): string {
   if (isAuthApiError(error) || isAuthError(error)) {
@@ -75,9 +64,9 @@ export function AuthForm({ mode, next }: { mode: Mode; next?: string }) {
   const [error, setError] = useState<string | null>(null);
 
   function finish() {
-    // A full navigation, not router.push: the header lives in the root layout,
-    // which App Router keeps mounted across client-side navigation. Pushing
-    // would land on the destination still wearing a signed-out header.
+    // Full navigation, not router.push. The header lives in the root layout,
+    // which stays mounted across client navigation, so a push would land on
+    // the destination still showing a signed-out header.
     window.location.assign(destination);
   }
 
@@ -114,8 +103,7 @@ export function AuthForm({ mode, next }: { mode: Mode; next?: string }) {
     setError(null);
     setPending('google');
     try {
-      // Neon Auth redirects the browser away and back to callbackURL, so on the
-      // happy path nothing after this runs.
+      // Redirects the browser away, so nothing after this runs when it works.
       await signIn.social({ provider: 'google', callbackURL: destination });
     } catch (caught) {
       setError(describeAuthError(caught));

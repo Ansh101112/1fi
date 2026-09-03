@@ -57,9 +57,7 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* Collapsed by default: this is reference material, not part of the
-          buying flow, so it stays out of the way until someone asks for it.
-          Native <details> keeps it keyboard-accessible with no client JS. */}
+      {/* Collapsed by default. Native <details> so it works without client JS. */}
       <section className="mt-14 rounded-panel border border-line bg-surface px-6 py-2 sm:px-8">
         {STEPS.map((step, index) => (
           <details key={step.title} className="group border-b border-line last:border-b-0">

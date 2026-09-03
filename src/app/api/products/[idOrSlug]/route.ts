@@ -3,15 +3,11 @@ import { NextResponse } from 'next/server';
 import { getProduct } from '@/lib/products';
 import type { ApiError, ProductDetail } from '@/lib/types';
 
-/**
- * GET /api/products/:idOrSlug
- *
- * One product with every variant, and each variant's EMI ladder already priced
- * against that variant. Quoting all of them server-side means switching finish
- * or storage in the UI is instant and never re-fetches.
- *
- * `:idOrSlug` accepts the url slug (`iphone-17-pro`) or the uuid.
- */
+// GET /api/products/:idOrSlug
+//
+// One product with every variant, each carrying its own priced EMI ladder.
+// Pricing them all here is what makes switching finish instant in the UI.
+// :idOrSlug takes either the slug (iphone-17-pro) or the uuid.
 
 export const dynamic = 'force-dynamic';
 

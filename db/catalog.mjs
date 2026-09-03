@@ -1,19 +1,11 @@
-/**
- * Seed catalogue: the single source of truth for `npm run db:seed` and
- * `npm run db:images`.
- *
- * Nothing here is read at runtime. The app only ever sees this data after it
- * has been written to Postgres and read back through the API; keeping the two
- * scripts on one definition is what stops a finish's swatch, its price and its
- * artwork from drifting apart.
- *
- * Each colour carries an `image` (the filename under public/products/) and a
- * `source` (where scripts/fetch-product-images.mjs downloads it from). Every
- * source is the manufacturer's own store CDN, so the artwork is the real device
- * in the real finish.
- *
- * Prices are whole rupees, matching the `integer` columns in db/schema.sql.
- */
+// The seed catalogue, shared by `npm run db:seed` and `npm run db:images`.
+//
+// Nothing here is read at runtime. The app only sees this once it has been
+// written to Postgres and read back through the API. Both scripts share one
+// definition so a finish's swatch, price and artwork cannot drift apart.
+//
+// Each colour has an `image` (the file under public/products/) and a `source`
+// on the manufacturer's own CDN. Prices are whole rupees.
 
 /** `Cosmic Orange` -> `cosmic-orange` */
 export function slugify(value) {
@@ -223,12 +215,9 @@ export const PRODUCTS = [
 ];
 
 /**
- * Expands each product into its colour x storage matrix.
- *
- * The first colour of the first storage tier becomes the product's default
- * variant, which is what the listing page prices against and what the detail
- * page preselects. Artwork is per finish, so every storage tier of a colour
- * points at the same file.
+ * Expands a product into its colour x storage matrix. The first combination
+ * becomes the default variant. Artwork is per finish, so every storage tier
+ * of a colour points at the same file.
  */
 export function buildVariants(product) {
   const variants = [];

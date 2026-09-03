@@ -1,18 +1,10 @@
 import { Pool, types } from 'pg';
 
-/**
- * Postgres connection pool, shared across the whole server runtime.
- *
- * Next.js reloads modules on every edit in development, so the pool is stashed
- * on `globalThis`. Without that, each hot reload would open a fresh pool and
- * Neon would start refusing connections after a handful of saves.
- */
+// Shared Postgres pool. Cached on globalThis because Next reloads modules on
+// every edit in dev, and a fresh pool per save runs Neon out of connections.
 
-// `numeric` arrives from node-postgres as a string to protect precision on
-// large values. Our only numeric column is emi_plans.interest_rate, a
-// percentage with two decimal places that sits comfortably inside a float64,
-// so we parse it here and let the rest of the codebase treat rates as numbers.
-// Every money column is `integer`, which pg already yields as a number.
+// pg returns `numeric` as a string. interest_rate is the only numeric column
+// and it is a small percentage, so parse it back to a number.
 const PG_NUMERIC_OID = 1700;
 types.setTypeParser(PG_NUMERIC_OID, (value) => Number.parseFloat(value));
 
@@ -36,9 +28,8 @@ function createPool(): Pool {
     connectionTimeoutMillis: 10_000,
   });
 
-  // A pooled client can fail while idle (Neon scales computes down). Without a
-  // listener, node-postgres escalates that to an uncaught exception and takes
-  // the server process with it.
+  // Neon scales computes down, so idle clients drop. Without a listener pg
+  // turns that into an uncaught exception and kills the process.
   pool.on('error', (error) => {
     console.error('[db] idle client error', error);
   });
@@ -52,7 +43,7 @@ if (process.env.NODE_ENV !== 'production') {
   globalThis.__oneFiPool = pool;
 }
 
-/** Runs a parameterised query and returns just the rows. */
+/** Run a query, get the rows. */
 export async function query<T extends Record<string, unknown>>(
   text: string,
   params: readonly unknown[] = [],
@@ -61,7 +52,7 @@ export async function query<T extends Record<string, unknown>>(
   return result.rows;
 }
 
-/** Runs a query expected to match at most one row. */
+/** Same, for queries that match at most one row. */
 export async function queryOne<T extends Record<string, unknown>>(
   text: string,
   params: readonly unknown[] = [],

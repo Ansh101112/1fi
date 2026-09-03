@@ -25,8 +25,7 @@ export default async function ApplicationPage({ params }: PageProps<'/applicatio
   const user = await getCurrentUser();
   if (!user) redirect(`/sign-in?next=${encodeURIComponent(`/applications/${reference}`)}`);
 
-  // Scoped to the signed-in user, so an application that exists but belongs to
-  // somebody else is indistinguishable from one that does not exist.
+  // Scoped to the owner, so someone else's application looks like a 404.
   const application = await getApplication(user.id, reference);
   if (!application) notFound();
 

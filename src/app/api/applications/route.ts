@@ -4,14 +4,10 @@ import { getCurrentUser } from '@/lib/auth';
 import { createApplication, listApplications } from '@/lib/applications';
 import type { ApiError, EmiApplication } from '@/lib/types';
 
-/**
- * /api/applications: the EMI applications belonging to the signed-in user.
- *
- * GET  lists them, newest first.
- * POST records the plan chosen on a product page.
- *
- * Both require a session: a credit application has to belong to somebody.
- */
+// The signed-in user's EMI applications.
+//
+// GET lists them newest first, POST records the plan picked on a product page.
+// Both need a session: an application has to belong to somebody.
 
 export const dynamic = 'force-dynamic';
 

@@ -1,10 +1,6 @@
-/**
- * The shapes the API returns. These are the contract between the route
- * handlers in src/app/api and everything that renders. Keep them in camelCase
- * even though the columns behind them are snake_case.
- */
+// What the API returns. camelCase here, snake_case in the database.
 
-/** An EMI plan already quoted against a specific variant's price. */
+/** A plan already priced against one variant. */
 export type EmiPlan = {
   id: string;
   tenureMonths: number;
@@ -14,7 +10,7 @@ export type EmiPlan = {
   processingFee: number;
   fundedBy: string;
   isPopular: boolean;
-  /** Derived fields, computed in src/lib/emi.ts. All whole rupees. */
+  /** Worked out in src/lib/emi.ts. Whole rupees. */
   principal: number;
   monthlyAmount: number;
   totalPayable: number;
@@ -35,7 +31,7 @@ export type ProductVariant = {
   imageUrl: string;
   inStock: boolean;
   isDefault: boolean;
-  /** The product's plan ladder, priced for this variant. */
+  /** The plan ladder, priced for this variant. */
   emiPlans: EmiPlan[];
 };
 
@@ -44,14 +40,14 @@ export type ColorOption = {
   hex: string;
 };
 
-/** The cheapest instalment on offer, used as the "EMI from" hook. */
+/** Cheapest instalment on offer. */
 export type LowestEmi = {
   monthlyAmount: number;
   tenureMonths: number;
   interestRate: number;
 };
 
-/** What /api/products returns per row: enough to render a card. */
+/** One row from /api/products, enough to draw a card. */
 export type ProductSummary = {
   id: string;
   slug: string;
@@ -79,7 +75,7 @@ export type ProductDetail = ProductSummary & {
   variants: ProductVariant[];
 };
 
-/** A submitted EMI application, as stored and returned. */
+/** A submitted application. */
 export type EmiApplication = {
   id: string;
   reference: string;
@@ -107,7 +103,7 @@ export type EmiApplication = {
   };
 };
 
-/** Uniform error body for every route handler. */
+/** Error body used by every route. */
 export type ApiError = {
   error: string;
   message: string;
