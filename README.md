@@ -87,10 +87,31 @@ browser. You should see `{"ok":true}`.
 
 ### Deploying
 
-Neon Auth allows `localhost` by default and nothing else. Before your first
-deploy, add your production URL under **Trusted origins** in the Neon Auth
-settings, or login will work locally and fail with a CORS error once deployed.
 Set the same three environment variables on your host.
+
+**Add your deployed URL to Trusted origins first.** Neon Auth allows
+`localhost` out of the box and nothing else, and it rejects every
+state-changing auth call from an origin it does not know:
+
+```json
+{ "message": "Invalid origin", "code": "INVALID_ORIGIN" }
+```
+
+Sign in, sign up and sign out all return `403`, so the site looks like it has a
+broken sign-out button rather than a config problem. Google sign-in still works,
+because that comes back through a redirect instead of a same-origin POST, which
+makes the whole thing more confusing: you can get signed in and then find you
+cannot get out.
+
+Add the origin in the Neon Console under Auth, or straight in SQL:
+
+```sql
+update neon_auth.project_config
+   set trusted_origins = trusted_origins || '["https://your-app.vercel.app"]'::jsonb,
+       updated_at = now();
+```
+
+Check it took with `select trusted_origins from neon_auth.project_config;`.
 
 ## API
 

@@ -1,10 +1,10 @@
 'use client';
 
-import { isAuthApiError, isAuthError } from '@neondatabase/auth/next';
 import Link from 'next/link';
 import { useState } from 'react';
 
 import { signIn, signUp } from '@/lib/auth-client';
+import { GENERIC_AUTH_ERROR, describeAuthError } from '@/lib/auth-errors';
 
 // Email/password and Google sign-in. Sign-in and sign-up share this because
 // they only differ by which client method they call and what the copy says.
@@ -37,20 +37,6 @@ const MIN_PASSWORD_LENGTH = 8;
 function safeRedirect(next: string | undefined): string {
   if (!next || !next.startsWith('/') || next.startsWith('//')) return '/';
   return next;
-}
-
-const GENERIC_ERROR = 'Could not reach the authentication service. Please try again.';
-
-/**
- * Neon Auth throws a typed error instead of returning { error } the way plain
- * Better Auth does. Without this, "User already exists" showed up as a
- * network failure and told the user nothing.
- */
-function describeAuthError(error: unknown): string {
-  if (isAuthApiError(error) || isAuthError(error)) {
-    return error.message || GENERIC_ERROR;
-  }
-  return GENERIC_ERROR;
 }
 
 export function AuthForm({ mode, next }: { mode: Mode; next?: string }) {
@@ -87,7 +73,7 @@ export function AuthForm({ mode, next }: { mode: Mode; next?: string }) {
           : await signUp.email({ email, password, name: name.trim() || email.split('@')[0] });
 
       if (result.error) {
-        setError(result.error.message ?? GENERIC_ERROR);
+        setError(result.error.message ?? GENERIC_AUTH_ERROR);
         return;
       }
 

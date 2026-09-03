@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 import { signOut } from '@/lib/auth-client';
+import { describeAuthError } from '@/lib/auth-errors';
 import type { SessionUser } from '@/lib/auth';
 
 /** "Ansh Tiwari" -> "AT", falling back to the email. */
@@ -16,6 +17,7 @@ function initials(user: SessionUser): string {
 export function UserMenu({ user }: { user: SessionUser }) {
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click or Escape, otherwise it traps you on touch.
@@ -41,6 +43,7 @@ export function UserMenu({ user }: { user: SessionUser }) {
 
   async function handleSignOut() {
     setSigningOut(true);
+    setError(null);
     try {
       await signOut();
       // Full navigation, same reason as sign-in: the root layout survives
@@ -48,8 +51,11 @@ export function UserMenu({ user }: { user: SessionUser }) {
       // what the lint rule wants and is exactly what does not work here.
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.assign('/');
-    } catch {
+    } catch (caught) {
+      // This used to reset the button and say nothing, so a failed sign out
+      // looked exactly like a dead button. Show what went wrong instead.
       setSigningOut(false);
+      setError(describeAuthError(caught));
     }
   }
 
@@ -98,6 +104,15 @@ export function UserMenu({ user }: { user: SessionUser }) {
           >
             {signingOut ? 'Signing out…' : 'Sign out'}
           </button>
+
+          {error ? (
+            <p
+              role="alert"
+              className="border-t border-line bg-flag/5 px-4 py-2.5 text-xs leading-relaxed text-flag"
+            >
+              {error}
+            </p>
+          ) : null}
         </div>
       ) : null}
     </div>
