@@ -11,8 +11,6 @@ import type {
   ProductVariant,
 } from '@/lib/types';
 
-// Catalogue reads. Products, variants and plans come back in three flat
-// queries and get stitched together here, rather than a query per product.
 
 type ProductRow = {
   id: string;
@@ -65,7 +63,6 @@ const PLAN_COLUMNS = `
   e.id, e.product_id, e.tenure_months, e.interest_rate, e.cashback,
   e.processing_fee, e.funded_by, e.is_popular`;
 
-/** Group rows by product_id, keeping the SQL order. */
 function groupByProduct<T extends { product_id: string }>(rows: T[]): Map<string, T[]> {
   const grouped = new Map<string, T[]>();
   for (const row of rows) {
@@ -104,12 +101,10 @@ function quotePlans(plans: PlanRow[], price: number): EmiPlan[] {
   });
 }
 
-/** The variant flagged default, falling back to the first by position. */
 function pickDefaultVariant(variants: VariantRow[]): VariantRow | undefined {
   return variants.find((variant) => variant.is_default) ?? variants[0];
 }
 
-/** Distinct colours, in variant order. */
 function distinctColors(variants: VariantRow[]): ColorOption[] {
   const seen = new Map<string, ColorOption>();
   for (const variant of variants) {

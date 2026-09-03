@@ -103,15 +103,16 @@ because that comes back through a redirect instead of a same-origin POST, which
 makes the whole thing more confusing: you can get signed in and then find you
 cannot get out.
 
-Add the origin in the Neon Console under Auth, or straight in SQL:
+Add the origin in the Neon Console under Auth. The stored shape is a list of
+objects, not plain strings:
 
-```sql
-update neon_auth.project_config
-   set trusted_origins = trusted_origins || '["https://your-app.vercel.app"]'::jsonb,
-       updated_at = now();
+```json
+[{ "domain": "https://your-app.vercel.app" }]
 ```
 
-Check it took with `select trusted_origins from neon_auth.project_config;`.
+Check it took with `select trusted_origins from neon_auth.project_config;`. A
+correctly listed origin turns a `403 INVALID_ORIGIN` into a normal
+`401 INVALID_EMAIL_OR_PASSWORD` for bad credentials.
 
 ## API
 

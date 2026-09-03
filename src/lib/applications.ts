@@ -7,12 +7,6 @@ import { calculateEmi } from '@/lib/emi';
 import type { EmiApplication } from '@/lib/types';
 import type { SessionUser } from '@/lib/auth';
 
-// What the Proceed button records.
-//
-// The figures are recomputed from the variant price and the plan terms, never
-// taken from the request body, then snapshotted onto the row so a later price
-// change cannot rewrite an application that is already in.
-
 type ApplicationRow = {
   id: string;
   reference: string;
@@ -77,7 +71,6 @@ function toApplication(row: ApplicationRow): EmiApplication {
   };
 }
 
-/** 1FI- plus 8 uppercase characters, matching the CHECK constraint. */
 function generateReference(): string {
   const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const bytes = randomBytes(8);
@@ -113,8 +106,6 @@ export async function createApplication(
   if (!variant) return { ok: false, reason: 'variant_not_found' };
   if (!variant.in_stock) return { ok: false, reason: 'out_of_stock' };
 
-  // Scoped to the variant's product, so nobody can borrow a cheaper
-  // product's rate.
   const plan = await queryOne<{
     id: string;
     tenure_months: number;
@@ -181,7 +172,6 @@ export async function listApplications(userId: string): Promise<EmiApplication[]
   return rows.map(toApplication);
 }
 
-/** Scoped to the owner, so a guessed reference leaks nothing. */
 export async function getApplication(
   userId: string,
   reference: string,
